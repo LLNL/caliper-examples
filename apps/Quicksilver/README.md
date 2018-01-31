@@ -1,3 +1,5 @@
+Caliper-instrumented version of Quicksilver, authored by [Alfredo Gimenez](https://github.com/alfredo-gimenez), gimenez1@llnl.gov. Copied from fork https://github.com/alfredo-gimenez/Quicksilver/tree/feature/caliper . 
+
 Quicksilver
 ===========
 
