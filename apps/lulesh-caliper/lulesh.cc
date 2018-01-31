@@ -160,6 +160,8 @@ Additional BSD Notice
 # include <omp.h>
 #endif
 
+#include <caliper/cali.h>
+
 #include "lulesh.h"
 
 
@@ -194,6 +196,8 @@ void Release(T **ptr)
 static inline
 void TimeIncrement(Domain& domain)
 {
+   CALI_CXX_MARK_FUNCTION;
+
    Real_t targetdt = domain.stoptime() - domain.time() ;
 
    if ((domain.dtfixed() <= Real_t(0.0)) && (domain.cycle() != Int_t(0))) {
@@ -524,6 +528,8 @@ void IntegrateStressForElems( Domain &domain,
                               Real_t *sigxx, Real_t *sigyy, Real_t *sigzz,
                               Real_t *determ, Index_t numElem, Index_t numNode)
 {
+   CALI_CXX_MARK_FUNCTION;
+
 #if _OPENMP
    Index_t numthreads = omp_get_max_threads();
 #else
@@ -743,6 +749,7 @@ void CalcFBHourglassForceForElems( Domain &domain,
                                    Real_t hourg, Index_t numElem,
                                    Index_t numNode)
 {
+   CALI_CXX_MARK_FUNCTION;
 
 #if _OPENMP
    Index_t numthreads = omp_get_max_threads();
@@ -1024,6 +1031,8 @@ static inline
 void CalcHourglassControlForElems(Domain& domain,
                                   Real_t determ[], Real_t hgcoef)
 {
+   CALI_CXX_MARK_FUNCTION;
+
    Index_t numElem = domain.numElem() ;
    Index_t numElem8 = numElem * 8 ;
    Real_t *dvdx = Allocate<Real_t>(numElem8) ;
@@ -1089,6 +1098,8 @@ void CalcHourglassControlForElems(Domain& domain,
 static inline
 void CalcVolumeForceForElems(Domain& domain)
 {
+   CALI_CXX_MARK_FUNCTION;
+
    Index_t numElem = domain.numElem() ;
    if (numElem != 0) {
       Real_t  hgcoef = domain.hgcoef() ;
@@ -1131,6 +1142,8 @@ void CalcVolumeForceForElems(Domain& domain)
 
 static inline void CalcForceForNodes(Domain& domain)
 {
+   CALI_CXX_MARK_FUNCTION;
+
   Index_t numNode = domain.numNode() ;
 
 #if USE_MPI  
@@ -1251,6 +1264,8 @@ void CalcPositionForNodes(Domain &domain, const Real_t dt, Index_t numNode)
 static inline
 void LagrangeNodal(Domain& domain)
 {
+   CALI_CXX_MARK_FUNCTION;
+
 #ifdef SEDOV_SYNC_POS_VEL_EARLY
    Domain_member fieldData[6] ;
 #endif
@@ -1533,6 +1548,7 @@ void CalcElemVelocityGradient( const Real_t* const xvel,
 void CalcKinematicsForElems( Domain &domain, Real_t *vnew, 
                              Real_t deltaTime, Index_t numElem )
 {
+   CALI_CXX_MARK_FUNCTION;
 
   // loop over all elements
 #pragma omp parallel for firstprivate(numElem, deltaTime)
@@ -1600,6 +1616,8 @@ void CalcKinematicsForElems( Domain &domain, Real_t *vnew,
 static inline
 void CalcLagrangeElements(Domain& domain, Real_t* vnew)
 {
+   CALI_CXX_MARK_FUNCTION;
+
    Index_t numElem = domain.numElem() ;
    if (numElem > 0) {
       const Real_t deltatime = domain.deltatime() ;
@@ -1641,6 +1659,8 @@ void CalcLagrangeElements(Domain& domain, Real_t* vnew)
 static inline
 void CalcMonotonicQGradientsForElems(Domain& domain, Real_t vnew[])
 {
+   CALI_CXX_MARK_FUNCTION;
+
    Index_t numElem = domain.numElem();
 
 #pragma omp parallel for firstprivate(numElem)
@@ -1790,6 +1810,8 @@ static inline
 void CalcMonotonicQRegionForElems(Domain &domain, Int_t r,
                                   Real_t vnew[], Real_t ptiny)
 {
+   CALI_CXX_MARK_FUNCTION;
+
    Real_t monoq_limiter_mult = domain.monoq_limiter_mult();
    Real_t monoq_max_slope = domain.monoq_max_slope();
    Real_t qlc_monoq = domain.qlc_monoq();
@@ -1958,10 +1980,14 @@ void CalcMonotonicQForElems(Domain& domain, Real_t vnew[])
    // 
    const Real_t ptiny = Real_t(1.e-36) ;
 
+   cali::Annotation r_ann("lulesh.region", CALI_ATTR_SCOPE_PROCESS);
+
    //
    // calculate the monotonic q for all regions
    //
    for (Index_t r=0 ; r<domain.numReg() ; ++r) {
+      cali::Annotation::Guard
+         g(r_ann.begin(static_cast<int>(r)));
 
       if (domain.regElemSize(r) > 0) {
          CalcMonotonicQRegionForElems(domain, r, vnew, ptiny) ;
@@ -1974,6 +2000,8 @@ void CalcMonotonicQForElems(Domain& domain, Real_t vnew[])
 static inline
 void CalcQForElems(Domain& domain, Real_t vnew[])
 {
+   CALI_CXX_MARK_FUNCTION;
+
    //
    // MONOTONIC Q option
    //
@@ -2048,6 +2076,8 @@ void CalcPressureForElems(Real_t* p_new, Real_t* bvc,
                           Real_t p_cut, Real_t eosvmax,
                           Index_t length, Index_t *regElemList)
 {
+   CALI_CXX_MARK_FUNCTION;
+
 #pragma omp parallel for firstprivate(length)
    for (Index_t i = 0; i < length ; ++i) {
       Real_t c1s = Real_t(2.0)/Real_t(3.0) ;
@@ -2086,6 +2116,8 @@ void CalcEnergyForElems(Real_t* p_new, Real_t* e_new, Real_t* q_new,
                         Real_t eosvmax,
                         Index_t length, Index_t *regElemList)
 {
+   CALI_CXX_MARK_FUNCTION;
+
    Real_t *pHalfStep = Allocate<Real_t>(length) ;
 
 #pragma omp parallel for firstprivate(length, emin)
@@ -2213,6 +2245,8 @@ void CalcSoundSpeedForElems(Domain &domain,
                             Real_t *bvc, Real_t ss4o3,
                             Index_t len, Index_t *regElemList)
 {
+   CALI_CXX_MARK_FUNCTION;
+
 #pragma omp parallel for firstprivate(rho0, ss4o3)
    for (Index_t i = 0; i < len ; ++i) {
       Index_t elem = regElemList[i];
@@ -2234,6 +2268,8 @@ static inline
 void EvalEOSForElems(Domain& domain, Real_t *vnewc,
                      Int_t numElemReg, Index_t *regElemList, Int_t rep)
 {
+   CALI_CXX_MARK_FUNCTION;
+
    Real_t  e_cut = domain.e_cut() ;
    Real_t  p_cut = domain.p_cut() ;
    Real_t  ss4o3 = domain.ss4o3() ;
@@ -2357,6 +2393,8 @@ void EvalEOSForElems(Domain& domain, Real_t *vnewc,
 static inline
 void ApplyMaterialPropertiesForElems(Domain& domain, Real_t vnew[])
 {
+   CALI_CXX_MARK_FUNCTION;
+
    Index_t numElem = domain.numElem() ;
 
   if (numElem != 0) {
@@ -2407,7 +2445,12 @@ void ApplyMaterialPropertiesForElems(Domain& domain, Real_t vnew[])
        }
     }
 
+    cali::Annotation r_ann("lulesh.region", CALI_ATTR_SCOPE_PROCESS);
+
     for (Int_t r=0 ; r<domain.numReg() ; r++) {
+       cali::Annotation::Guard
+          g(r_ann.begin(static_cast<int>(r)));
+
        Index_t numElemReg = domain.regElemSize(r);
        Index_t *regElemList = domain.regElemlist(r);
        Int_t rep;
@@ -2433,6 +2476,8 @@ static inline
 void UpdateVolumesForElems(Domain &domain, Real_t *vnew,
                            Real_t v_cut, Index_t length)
 {
+   CALI_CXX_MARK_FUNCTION;
+
    if (length != 0) {
 #pragma omp parallel for firstprivate(length, v_cut)
       for(Index_t i=0 ; i<length ; ++i) {
@@ -2453,6 +2498,8 @@ void UpdateVolumesForElems(Domain &domain, Real_t *vnew,
 static inline
 void LagrangeElements(Domain& domain, Index_t numElem)
 {
+   CALI_CXX_MARK_FUNCTION;
+
   Real_t *vnew = Allocate<Real_t>(numElem) ;  /* new relative vol -- temp */
 
   CalcLagrangeElements(domain, vnew) ;
@@ -2475,6 +2522,8 @@ void CalcCourantConstraintForElems(Domain &domain, Index_t length,
                                    Index_t *regElemlist,
                                    Real_t qqc, Real_t& dtcourant)
 {
+   CALI_CXX_MARK_FUNCTION;
+
 #if _OPENMP   
    Index_t threads = omp_get_max_threads();
    static Index_t *courant_elem_per_thread;
@@ -2551,6 +2600,8 @@ static inline
 void CalcHydroConstraintForElems(Domain &domain, Index_t length,
                                  Index_t *regElemlist, Real_t dvovmax, Real_t& dthydro)
 {
+   CALI_CXX_MARK_FUNCTION;
+
 #if _OPENMP   
    Index_t threads = omp_get_max_threads();
    static Index_t *hydro_elem_per_thread;
@@ -2614,6 +2665,7 @@ void CalcHydroConstraintForElems(Domain &domain, Index_t length,
 
 static inline
 void CalcTimeConstraintsForElems(Domain& domain) {
+   CALI_CXX_MARK_FUNCTION;
 
    // Initialize conditions to a very large value
    domain.dtcourant() = 1.0e+20;
@@ -2639,6 +2691,8 @@ void CalcTimeConstraintsForElems(Domain& domain) {
 static inline
 void LagrangeLeapFrog(Domain& domain)
 {
+   CALI_CXX_MARK_FUNCTION;
+
 #ifdef SEDOV_SYNC_POS_VEL_LATE
    Domain_member fieldData[6] ;
 #endif
@@ -2688,10 +2742,12 @@ void LagrangeLeapFrog(Domain& domain)
 
 int main(int argc, char *argv[])
 {
-  Domain *locDom ;
+   Domain *locDom ;
    Int_t numRanks ;
    Int_t myRank ;
    struct cmdLineOpts opts;
+
+   cali_config_preset("CALI_CALIPER_ATTRIBUTE_PROPERTIES", "function=nested:process_scope,loop=nested:process_scope,iteration#lulesh.cycle=process_scope:asvalue");
 
 #if USE_MPI   
    Domain_member fieldData ;
@@ -2703,6 +2759,8 @@ int main(int argc, char *argv[])
    numRanks = 1;
    myRank = 0;
 #endif   
+
+   CALI_CXX_MARK_FUNCTION;
 
    /* Set defaults that can be overridden by command line opts */
    opts.its = 9999999;
@@ -2757,6 +2815,8 @@ int main(int argc, char *argv[])
    // End initialization
    MPI_Barrier(MPI_COMM_WORLD);
 #endif   
+
+   CALI_CXX_MARK_LOOP_BEGIN(mainloop, "lulesh.cycle");
    
    // BEGIN timestep to solution */
 #if USE_MPI   
@@ -2769,6 +2829,7 @@ int main(int argc, char *argv[])
 //   for(Int_t i = 0; i < locDom->numReg(); i++)
 //      std::cout << "region" << i + 1<< "size" << locDom->regElemSize(i) <<std::endl;
    while((locDom->time() < locDom->stoptime()) && (locDom->cycle() < opts.its)) {
+      CALI_CXX_MARK_LOOP_ITERATION(mainloop, static_cast<int>(locDom->cycle()));
 
       TimeIncrement(*locDom) ;
       LagrangeLeapFrog(*locDom) ;
@@ -2788,6 +2849,9 @@ int main(int argc, char *argv[])
    gettimeofday(&end, NULL) ;
    elapsed_time = (double)(end.tv_sec - start.tv_sec) + ((double)(end.tv_usec - start.tv_usec))/1000000 ;
 #endif
+
+   CALI_CXX_MARK_LOOP_END(mainloop);
+
    double elapsed_timeG;
 #if USE_MPI   
    MPI_Reduce(&elapsed_time, &elapsed_timeG, 1, MPI_DOUBLE,

@@ -2,6 +2,7 @@
 # error "You should specify USE_MPI=0 or USE_MPI=1 on the compile line"
 #endif
 
+#include <caliper/cali_datatracker.h>
 
 // OpenMP will be compiled in if this flag is set to 1 AND the compiler beging
 // used supports it (i.e. the _OPENMP symbol is defined)
@@ -137,30 +138,53 @@ class Domain {
    // ALLOCATION
    //
 
+#define TRACK_ALLOC(name) \
+   cali_datatracker_track(m_##name.data(), #name, m_##name.capacity()*sizeof(m_##name.front()))
+
    void AllocateNodePersistent(Int_t numNode) // Node-centered
    {
       m_x.resize(numNode);  // coordinates
       m_y.resize(numNode);
       m_z.resize(numNode);
 
+      TRACK_ALLOC(x);
+      TRACK_ALLOC(y);
+      TRACK_ALLOC(z);
+
       m_xd.resize(numNode); // velocities
       m_yd.resize(numNode);
       m_zd.resize(numNode);
+
+      TRACK_ALLOC(xd);
+      TRACK_ALLOC(yd);
+      TRACK_ALLOC(zd);
 
       m_xdd.resize(numNode); // accelerations
       m_ydd.resize(numNode);
       m_zdd.resize(numNode);
 
+      TRACK_ALLOC(xdd);
+      TRACK_ALLOC(ydd);
+      TRACK_ALLOC(zdd);
+
       m_fx.resize(numNode);  // forces
       m_fy.resize(numNode);
       m_fz.resize(numNode);
 
+      TRACK_ALLOC(fx);
+      TRACK_ALLOC(fy);
+      TRACK_ALLOC(fz);
+
       m_nodalMass.resize(numNode);  // mass
+
+      TRACK_ALLOC(nodalMass);
    }
 
    void AllocateElemPersistent(Int_t numElem) // Elem-centered
    {
       m_nodelist.resize(8*numElem);
+
+      TRACK_ALLOC(nodelist);
 
       // elem connectivities through face
       m_lxim.resize(numElem);
@@ -170,26 +194,54 @@ class Domain {
       m_lzetam.resize(numElem);
       m_lzetap.resize(numElem);
 
+      TRACK_ALLOC(lxim);
+      TRACK_ALLOC(lxip);
+      TRACK_ALLOC(letam);
+      TRACK_ALLOC(letap);
+      TRACK_ALLOC(lzetam);
+      TRACK_ALLOC(lzetap);
+
       m_elemBC.resize(numElem);
+
+      TRACK_ALLOC(elemBC);
 
       m_e.resize(numElem);
       m_p.resize(numElem);
+
+      TRACK_ALLOC(e);
+      TRACK_ALLOC(p);
 
       m_q.resize(numElem);
       m_ql.resize(numElem);
       m_qq.resize(numElem);
 
+      TRACK_ALLOC(q);
+      TRACK_ALLOC(ql);
+      TRACK_ALLOC(qq);
+
       m_v.resize(numElem);
+
+      TRACK_ALLOC(v);
 
       m_volo.resize(numElem);
       m_delv.resize(numElem);
       m_vdov.resize(numElem);
 
+      TRACK_ALLOC(volo);
+      TRACK_ALLOC(delv);
+      TRACK_ALLOC(vdov);
+
       m_arealg.resize(numElem);
+
+      TRACK_ALLOC(arealg);
 
       m_ss.resize(numElem);
 
+      TRACK_ALLOC(ss);
+
       m_elemMass.resize(numElem);
+
+      TRACK_ALLOC(elemMass);
    }
 
    void AllocateGradients(Int_t numElem, Int_t allElem)
@@ -199,18 +251,34 @@ class Domain {
       m_delx_eta.resize(numElem) ;
       m_delx_zeta.resize(numElem) ;
 
+      TRACK_ALLOC(delx_xi);
+      TRACK_ALLOC(delx_eta);
+      TRACK_ALLOC(delx_zeta);
+
       // Velocity gradients
       m_delv_xi.resize(allElem) ;
       m_delv_eta.resize(allElem);
       m_delv_zeta.resize(allElem) ;
+
+      TRACK_ALLOC(delv_xi);
+      TRACK_ALLOC(delv_eta);
+      TRACK_ALLOC(delv_zeta);
    }
 
    void DeallocateGradients()
    {
+      cali_datatracker_untrack(m_delx_zeta.data());
+      cali_datatracker_untrack(m_delx_eta.data());
+      cali_datatracker_untrack(m_delx_xi.data());
+
       m_delx_zeta.clear() ;
       m_delx_eta.clear() ;
       m_delx_xi.clear() ;
 
+      cali_datatracker_untrack(m_delv_zeta.data());
+      cali_datatracker_untrack(m_delv_eta.data());
+      cali_datatracker_untrack(m_delv_xi.data());
+     
       m_delv_zeta.clear() ;
       m_delv_eta.clear() ;
       m_delv_xi.clear() ;
@@ -221,14 +289,24 @@ class Domain {
       m_dxx.resize(numElem) ;
       m_dyy.resize(numElem) ;
       m_dzz.resize(numElem) ;
+
+      TRACK_ALLOC(dxx);
+      TRACK_ALLOC(dyy);
+      TRACK_ALLOC(dzz);
    }
 
    void DeallocateStrains()
    {
+      cali_datatracker_untrack(m_dzz.data());
+      cali_datatracker_untrack(m_dyy.data());
+      cali_datatracker_untrack(m_dxx.data());
+
       m_dzz.clear() ;
       m_dyy.clear() ;
       m_dxx.clear() ;
    }
+
+#undef TRACK_ALLOC
    
    //
    // ACCESSORS

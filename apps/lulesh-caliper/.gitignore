@@ -1,0 +1,7 @@
+*~
+build*
+TAGS
+.DS_Store
+.emacs*
+*.swp
+
