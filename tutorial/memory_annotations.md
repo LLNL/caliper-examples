@@ -36,4 +36,4 @@ More advanced memory allocation annotations may be created by invoking
 the low-level API, documented here:
 http://llnl.github.io/Caliper/AnnotationAPI.html
 
-[Next - Tracking Memory Allocations](memory_allocations.md)
+[Next - Tracking Memory Allocations](https://github.com/LLNL/caliper-examples/blob/master/tutorial/memory_allocations.md)

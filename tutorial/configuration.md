@@ -31,4 +31,4 @@ export CALI_SERVICES_ENABLE=event,recorder,trace
 
 Simple examples are provided in the next section.
 
-[Next - Configuring Runtime Profiling](runtime_profiling.md)
+[Next - Configuring Runtime Profiling](https://github.com/LLNL/caliper-examples/blob/master/tutorial/runtime_profiling.md)

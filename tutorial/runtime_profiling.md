@@ -96,4 +96,4 @@ main                                              26781.000000
 In the next section, we will show how to annotate memory allocations for
 data-centric analysis.
 
-[Next - Annotating Memory Allocations](memory_annotations.md)
+[Next - Annotating Memory Allocations](https://github.com/LLNL/caliper-examples/blob/master/tutorial/memory_annotations.md)

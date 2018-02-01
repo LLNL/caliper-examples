@@ -39,4 +39,4 @@ More advanced annotations may be created by invoking the low-level
 API, documented here:
 http://llnl.github.io/Caliper/AnnotationAPI.html
 
-[Next - Configuring Caliper](configuration.md)
+[Next - Configuring Caliper](https://github.com/LLNL/caliper-examples/blob/master/tutorial/configuration.md)
