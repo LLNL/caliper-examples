@@ -5,30 +5,54 @@ unintrusive to the application execution.
 Users must provide a Caliper configuration to enable data collection.
 
 The configuration defines:
-- what data to collect (time, counters, samples)
-- how to process it (tracing, aggregating)
-- output formats
+- What data to collect (e.g. time, counters, samples)
+- How to process it (tracing or aggregating)
+- Output formats (e.g. Caliper raw data, JSON, or formatted human readable text)
 
-Caliper may be configured in a number of ways:
-- predefined configuration profiles
-- environment variables
-- configuration files
-- through the runtime configuration API
+Caliper may be configured via
 
-Runtime functionality in Caliper is provided via ``services''.
-Services provide measurement data or processing and data recording
-capabilities. The flexible combination and configuration of these
-services allows you to quickly assemble recording solutions for a wide
-range of usage scenarios.  Detailed documentation is here:
+- Environment variables
+- Configuration files
+- A runtime configuration API
+- Pre-defined configuration profiles: Caliper comes with a few pre-defined
+  configuration profiles for basic profiling use cases, e.g. "runtime-report" and
+  "flat-function-profile".
+
+
+## Services
+
+Most of Caliper's runtime functionality is provided by individual
+modules called "services". Services provide e.g. measurement data,
+processing and data recording capabilities, or I/O functionality. They
+can be flexibly combined to quickly assemble recording solutions for a
+wide range of usage scenarios. Thus, selecting appropriate services is
+the most important configuration decision. Typically, we will select at
+least one service in each of the following groups to form a processing
+pipeline:
+
+- Data collection (e.g., timestamp, callpath, PAPI, MPI)
+- Measurement trigger (e.g., event, sampler, libpfm sampling)
+- Data buffering and processing (e.g. trace or aggregate)
+- Output (e.g., report)
+
+Caliper will warn if the service selection in the given configuration
+does not cover all required groups, as no data can be recorded.
+
+To enable services, we list them in the `CALI_SERVICES_ENABLE`
+configuration variable, separated by comma.
+This following minimal example uses the "event" service to record
+begin and end events for each annotated region in the code, the
+"trace" service to store the generated records in a trace buffer, and
+the "recorder" service to write the trace out in Caliper's raw data
+format:
+
+    export CALI_SERVICES_ENABLE=event,recorder,trace
+
+A complete list of services and their configuration is here:
 http://llnl.github.io/Caliper/services.html
 
-You can enable the services required for your measurement with the
-`CALI_SERVICES_ENABLE` configuration variable, e.g.:
 
-```
-export CALI_SERVICES_ENABLE=event,recorder,trace
-```
+We will discuss a few simple examples in the next section.
 
-Simple examples are provided in the next section.
+[Next - Basic Runtime Profiling](https://github.com/LLNL/caliper-examples/blob/master/tutorial/runtime_profiling.md)
 
-[Next - Configuring Runtime Profiling](https://github.com/LLNL/caliper-examples/blob/master/tutorial/runtime_profiling.md)
