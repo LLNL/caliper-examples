@@ -20,16 +20,18 @@ void do_work(size_t M, size_t W, size_t N)
     double *matA =
 	 (double*)malloc(sizeof(double)*M*W);
 
-    size_t num_dimensions = 2;
-    size_t A_dims[] = {M,W};
-    CALI_DATATRACKER_TRACK_DIMENSIONAL(
+    size_t num_dimensions = 2;
+    size_t A_dims[] = {M,W};
+    CALI_DATATRACKER_TRACK_DIMENSIONAL(
 		matA,
 		sizeof(double),
 		A_dims,
 		num_dimensions);
 	...
 
-    CALI_DATATRACKER_FREE(arrayA);     CALI_DATATRACKER_FREE(matA);}
+    CALI_DATATRACKER_FREE(arrayA);
+    CALI_DATATRACKER_FREE(matA);
+}
 ```
 
 More advanced memory allocation annotations may be created by invoking
