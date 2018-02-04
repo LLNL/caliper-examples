@@ -10,6 +10,13 @@ Rob Neely <neely4@llnl.gov>
 
 Also please send any notable results to Ian Karlin <karlin1@llnl.gov> as we are still evaluating the performance of this code.
 
+*** Caliper ***
+
+This is a modified copy of LULESH that uses Caliper for performance analysis. 
+Caliper is required to build it.
+
+See https://github.com/LLNL/Caliper
+
 *** Notable changes in LULESH 2.0 ***
 
 Split functionality into different files
