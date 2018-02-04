@@ -1,10 +1,5 @@
 # Caliper tutorial
 
-[Caliper](https://github.com/LLNL/Caliper) is a flexible program
-instrumentation and performance measurement framework for C, C++ and
-Fortran programs, designed as a *performance analysis toolbox in a
-library*.
-
 This tutorial covers basic Caliper usage, data-centric analysis, and
 top-down analysis.
 
