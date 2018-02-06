@@ -36,5 +36,3 @@
 
 .ipynb_checkpoints
 __pycache__
-
-datasets/*

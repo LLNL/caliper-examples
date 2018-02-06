@@ -149,4 +149,4 @@ cali-query -q "FORMAT json(quote-all)" memory_access_samples.cali > memory_acces
 
 The following section shows example plots and analysis of this data:
 
-[LULESH Memory Access Sampling Analysis](https://nbviewer.jupyter.org/github/llnl/caliper-examples/blob/master/jupyter_notebooks/lulesh_memory_latency.ipynb)
+[LULESH Memory Access Sampling Analysis](https://nbviewer.jupyter.org/github/llnl/caliper-examples/blob/master/jupyter_notebooks/LULESH%20Memory%20Load%20Sampling%20Analysis.ipynb)

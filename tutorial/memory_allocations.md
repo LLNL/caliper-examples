@@ -161,4 +161,4 @@ can be readily parsed from different Python libraries.  Here, we show
 how to parse and analyze LULESH memory allocation data in Jupyter,
 using Python, Pandas, and Plotly:
 
-[LULESH Memory Allocation Analysis](https://nbviewer.jupyter.org/github/llnl/caliper-examples/blob/master/jupyter_notebooks/lulesh_memory_allocations.ipynb)
+[LULESH Memory Allocation Analysis](https://nbviewer.jupyter.org/github/llnl/caliper-examples/blob/master/jupyter_notebooks/LULESH%20Memory%20Allocation%20Analysis.ipynb)
