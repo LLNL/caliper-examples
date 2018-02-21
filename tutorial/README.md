@@ -20,7 +20,7 @@ top-down analysis.
 * [Annotating memory allocations](memory_annotations.md):
   Labelling memory allocations for data-centric analysis.
 
-* [Tracking memory allocations](memory_alloctions.md):
+* [Tracking memory allocations](memory_allocations.md):
   Tracking and visualizing the lifecycle of memory allocations.
 
 * [Data-centric profiling](data_centric.md):
