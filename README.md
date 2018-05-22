@@ -7,7 +7,7 @@ library*.
 
 This repository contains example codes and configurations, datasets
 collected using Caliper, and a
-[tutorial](https://https://github.com/LLNL/caliper-examples/tree/master/tutorial).
+[tutorial](https://github.com/LLNL/caliper-examples/tree/master/tutorial).
 
 You find Caliper itself in its Github repository: 
 https://github.com/LLNL/Caliper
