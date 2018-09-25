@@ -1,0 +1,15 @@
+#include<string>
+#include "lulesh_caliper_annotated.h"
+#include <caliper/cali.h>
+using valueType = const char*;
+valueType compilerName = "@CMAKE_CXX_COMPILER_ID@";
+valueType compilerVersion = "@CMAKE_CXX_COMPILER_VERSION@";
+valueType blameThisPerson = "@FAULT@";
+valueType compilerFlags = "@CMAKE_CXX_FLAGS@";
+void record_caliper_metadata(){
+  setGlobal("Compiler Name",compilerName);
+  setGlobal("Compiler Version",compilerVersion);
+  setGlobal("Code Builder",blameThisPerson);
+  setGlobal("Compiler Flags",compilerFlags);
+}
+
