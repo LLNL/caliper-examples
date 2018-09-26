@@ -163,6 +163,7 @@ Additional BSD Notice
 #include <caliper/cali.h>
 
 #include "lulesh.h"
+#include "lulesh_caliper_annotated.h"
 
 
 /*********************************/
@@ -2748,7 +2749,7 @@ int main(int argc, char *argv[])
    struct cmdLineOpts opts;
 
    cali_config_preset("CALI_CALIPER_ATTRIBUTE_PROPERTIES", "function=nested:process_scope,loop=nested:process_scope,iteration#lulesh.cycle=process_scope:asvalue");
-
+   record_caliper_metadata();
 #if USE_MPI   
    Domain_member fieldData ;
 
