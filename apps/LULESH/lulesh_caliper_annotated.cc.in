@@ -1,15 +1,25 @@
 #include<string>
 #include "lulesh_caliper_annotated.h"
 #include <caliper/cali.h>
+#include <time.h>
 using valueType = const char*;
 valueType compilerName = "@CMAKE_CXX_COMPILER_ID@";
 valueType compilerVersion = "@CMAKE_CXX_COMPILER_VERSION@";
 valueType blameThisPerson = "@FAULT@";
 valueType compilerFlags = "@CMAKE_CXX_FLAGS@";
 void record_caliper_metadata(){
+  time_t timer;
+  /** Not recording time, Caliper has issues with ':' in values? */
+  //time(&timer);
+  //struct tm* rt = localtime(&timer);
   setGlobal("Compiler Name",compilerName);
   setGlobal("Compiler Version",compilerVersion);
   setGlobal("Code Builder",blameThisPerson);
   setGlobal("Compiler Flags",compilerFlags);
+  //setGlobal("Run Start Time",asctime(rt));
 }
 
+void enable_caliper(){
+  cali_config_preset("CALI_SERVICES_ENABLE","event:aggregate:timestamp:recorder");
+  cali_config_preset("CALI_TIMER_RECORD_INCLUSIVE","true");
+}

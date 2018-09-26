@@ -2748,8 +2748,6 @@ int main(int argc, char *argv[])
    Int_t myRank ;
    struct cmdLineOpts opts;
 
-   cali_config_preset("CALI_CALIPER_ATTRIBUTE_PROPERTIES", "function=nested:process_scope,loop=nested:process_scope,iteration#lulesh.cycle=process_scope:asvalue");
-   record_caliper_metadata();
 #if USE_MPI   
    Domain_member fieldData ;
 
@@ -2761,7 +2759,6 @@ int main(int argc, char *argv[])
    myRank = 0;
 #endif   
 
-   CALI_CXX_MARK_FUNCTION;
 
    /* Set defaults that can be overridden by command line opts */
    opts.its = 9999999;
@@ -2773,6 +2770,7 @@ int main(int argc, char *argv[])
    opts.viz = 0;
    opts.balance = 1;
    opts.cost = 1;
+   opts.spot = 0;
 
    ParseCommandLineOptions(argc, argv, myRank, &opts);
 
@@ -2791,6 +2789,18 @@ int main(int argc, char *argv[])
       printf("To write an output file for VisIt, use -v\n");
       printf("See help (-h) for more options\n\n");
    }
+   if(opts.spot){
+     enable_caliper();
+   }
+   cali_config_preset("CALI_CALIPER_ATTRIBUTE_PROPERTIES", "function=nested:process_scope,loop=nested:process_scope,iteration#lulesh.cycle=process_scope:asvalue");
+   setGlobal("Iterations",opts.its);
+   setGlobal("Problem Size",opts.nx);
+   setGlobal("Number of Regions",opts.numReg);
+   setGlobal("Region Balance",opts.balance);
+   setGlobal("Region Cost",opts.cost);
+   record_caliper_metadata();
+   CALI_CXX_MARK_FUNCTION;
+
 
    // Set up the mesh and decompose. Assumes regular cubes for now
    Int_t col, row, plane, side;

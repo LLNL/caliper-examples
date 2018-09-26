@@ -39,6 +39,7 @@ static void PrintCommandLineOptions(char *execname, int myRank)
       printf(" -c <cost>       : Extra cost of more expensive regions (def: 1)\n");
       printf(" -f <numfiles>   : Number of files to split viz dump into (def: (np+10)/9)\n");
       printf(" -p              : Print out progress\n");
+      printf(" -g              : Produce Spot Caliper file\n");
       printf(" -v              : Output viz file (requires compiling with -DVIZ_MESH\n");
       printf(" -h              : This message\n");
       printf("\n\n");
@@ -117,6 +118,10 @@ void ParseCommandLineOptions(int argc, char *argv[],
          /* -q */
          else if (strcmp(argv[i], "-q") == 0) {
             opts->quiet = 1;
+            i++;
+         }
+         else if (strcmp(argv[i], "-g") == 0) {
+            opts->spot = 1;
             i++;
          }
          else if (strcmp(argv[i], "-b") == 0) {
