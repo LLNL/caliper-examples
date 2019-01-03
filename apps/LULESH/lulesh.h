@@ -652,6 +652,7 @@ struct cmdLineOpts {
    Int_t numFiles; // -f
    Int_t showProg; // -p
    Int_t quiet; // -q
+   Int_t spot; // -g
    Int_t viz; // -v 
    Int_t cost; // -c
    Int_t balance; // -b

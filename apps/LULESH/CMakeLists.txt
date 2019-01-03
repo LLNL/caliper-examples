@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.0)
-
 project(LULESH CXX)
+
+execute_process(COMMAND whoami OUTPUT_VARIABLE FAULT OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+configure_file(lulesh_caliper_annotated.cc.in ${CMAKE_BINARY_DIR}/lulesh_caliper_annotated.cc)
+
 
 option(WITH_MPI    "Build LULESH with MPI"          TRUE)
 option(WITH_OPENMP "Build LULESH with OpenMP"       TRUE)
@@ -19,7 +23,7 @@ if (WITH_MPI)
 else()
   add_definitions("-DUSE_MPI=0")
 endif()
-
+include_directories(${CMAKE_SOURCE_DIR})
 if (WITH_OPENMP)
   find_package(OpenMP REQUIRED)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
@@ -55,6 +59,7 @@ set(LULESH_SOURCES
   lulesh-init.cc
   lulesh-util.cc
   lulesh-viz.cc
+  ${CMAKE_BINARY_DIR}/lulesh_caliper_annotated.cc
   lulesh.cc)
 
 set(LULESH_EXEC lulesh2.0)
