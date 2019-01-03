@@ -36,5 +36,5 @@ void record_caliper_metadata(){
 
 void enable_caliper(){
   cali_config_preset("CALI_SERVICES_ENABLE","event:aggregate:timestamp:recorder");
-  cali_config_preset("CALI_TIMER_RECORD_INCLUSIVE","true");
+  cali_config_preset("CALI_TIMER_INCLUSIVE_DURATION","true");
 }
