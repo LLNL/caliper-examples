@@ -2,6 +2,8 @@
 #include "lulesh_caliper_annotated.h"
 #include <caliper/cali.h>
 #include <time.h>
+#include <cstdlib>
+#include <algorithm>
 using valueType = const char*;
 valueType compilerName = "@CMAKE_CXX_COMPILER_ID@";
 valueType compilerVersion = "@CMAKE_CXX_COMPILER_VERSION@";
@@ -16,6 +18,19 @@ void record_caliper_metadata(){
   setGlobal("Compiler Version",compilerVersion);
   setGlobal("Code Builder",blameThisPerson);
   setGlobal("Compiler Flags",compilerFlags);
+  std::string hostname = getenv("HOSTNAME");
+  auto firstdigit = std::find_if(std::begin(hostname),std::end(hostname),[=](const char in){
+      return isdigit(in);
+  });
+  std::string cluster;
+  if(firstdigit == hostname.end()){
+    cluster = hostname;
+  }
+  else{
+    cluster = std::string(std::begin(hostname),firstdigit);
+  }
+  setGlobal("Hostname",hostname.c_str());
+  setGlobal("Cluster",cluster.c_str());
   //setGlobal("Run Start Time",asctime(rt));
 }
 
