@@ -160,11 +160,7 @@ Additional BSD Notice
 # include <omp.h>
 #endif
 
-#include <caliper/cali.h>
-
 #include "lulesh.h"
-#include "lulesh_caliper_annotated.h"
-
 
 /*********************************/
 /* Data structure implementation */
@@ -2789,18 +2785,25 @@ int main(int argc, char *argv[])
       printf("To write an output file for VisIt, use -v\n");
       printf("See help (-h) for more options\n\n");
    }
-   if(opts.spot){
-     enable_caliper();
-   }
-   cali_config_preset("CALI_CALIPER_ATTRIBUTE_PROPERTIES", "function=nested:process_scope,loop=nested:process_scope,iteration#lulesh.cycle=process_scope:asvalue");
-   setGlobal("Iterations",opts.its);
-   setGlobal("Problem Size",opts.nx);
-   setGlobal("Number of Regions",opts.numReg);
-   setGlobal("Region Balance",opts.balance);
-   setGlobal("Region Cost",opts.cost);
-   record_caliper_metadata();
-   CALI_CXX_MARK_FUNCTION;
 
+#if USE_MPI
+   cali_mpi_init();
+#endif
+
+   cali_config_preset("CALI_LOG_VERBOSITY", "0");
+   cali_config_preset("CALI_CALIPER_ATTRIBUTE_PROPERTIES",
+                      "function=nested:process_scope"
+                      ",loop=nested:process_scope"
+                      ",mpi.function=nested:process_scope" 
+                      ",iteration#lulesh.cycle=process_scope:asvalue");
+
+   if (opts.spot) {
+       EnableSpot();
+   }  
+   
+   RecordCaliperMetadata(opts);
+   
+   CALI_CXX_MARK_FUNCTION;
 
    // Set up the mesh and decompose. Assumes regular cubes for now
    Int_t col, row, plane, side;

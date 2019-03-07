@@ -2,6 +2,7 @@
 # error "You should specify USE_MPI=0 or USE_MPI=1 on the compile line"
 #endif
 
+#include <caliper/cali.h>
 #include <caliper/cali_datatracker.h>
 
 // OpenMP will be compiled in if this flag is set to 1 AND the compiler beging
@@ -10,6 +11,7 @@
 
 #if USE_MPI
 #include <mpi.h>
+#include <caliper/cali-mpi.h>
 
 /*
    define one of these three symbols:
@@ -668,6 +670,9 @@ Real_t CalcElemVolume( const Real_t x[8],
                        const Real_t z[8]);
 
 // lulesh-util
+void RecordCaliperMetadata(const struct cmdLineOpts& opts);
+void EnableSpot();
+
 void ParseCommandLineOptions(int argc, char *argv[],
                              Int_t myRank, struct cmdLineOpts *opts);
 void VerifyAndWriteFinalOutput(Real_t elapsed_time,
