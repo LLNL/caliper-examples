@@ -1,11 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 project(LULESH CXX)
 
-execute_process(COMMAND whoami OUTPUT_VARIABLE FAULT OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-configure_file(lulesh_caliper_annotated.cc.in ${CMAKE_BINARY_DIR}/lulesh_caliper_annotated.cc)
-
-
 option(WITH_MPI    "Build LULESH with MPI"          TRUE)
 option(WITH_OPENMP "Build LULESH with OpenMP"       TRUE)
 option(WITH_SILO   "Build LULESH with silo support" FALSE)
@@ -54,12 +49,15 @@ endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 11)
 
+execute_process(COMMAND whoami OUTPUT_VARIABLE LULESH_BUILT_BY OUTPUT_STRIP_TRAILING_WHITESPACE)
+configure_file(lulesh-build-metadata.cc.in ${CMAKE_BINARY_DIR}/lulesh-build-metadata.cc)
+
 set(LULESH_SOURCES
   lulesh-comm.cc
   lulesh-init.cc
   lulesh-util.cc
   lulesh-viz.cc
-  ${CMAKE_BINARY_DIR}/lulesh_caliper_annotated.cc
+  ${CMAKE_BINARY_DIR}/lulesh-build-metadata.cc
   lulesh.cc)
 
 set(LULESH_EXEC lulesh2.0)

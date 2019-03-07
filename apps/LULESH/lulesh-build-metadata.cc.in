@@ -1,0 +1,7 @@
+const char* buildMetadata[][2] = {
+  { "Compiler Name",    "@CMAKE_CXX_COMPILER_ID@" },
+  { "Compiler Version", "@CMAKE_CXX_COMPILER_VERSION@" },
+  { "Built by",         "@LULESH_BUILT_BY@" },
+  { "Compiler Flags",   "@CMAKE_CXX_FLAGS@" },
+  { 0, 0 }
+};
