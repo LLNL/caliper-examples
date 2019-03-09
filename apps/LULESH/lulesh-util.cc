@@ -2,7 +2,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <ctime>
 #include <stdio.h>
+#include <unistd.h>
 #if USE_MPI
 #include <mpi.h>
 #endif
@@ -20,17 +22,12 @@ extern const char* buildMetadata[][2];
 
 void RecordCaliperMetadata(const struct cmdLineOpts& opts)
 {
-   time_t timer;
    /** Not recording time, Caliper has issues with ':' in values? */
    //time(&timer);
    //struct tm* rt = localtime(&timer);
 
    std::string hostname = getenv("HOSTNAME");
-   auto firstdigit = std::find_if(std::begin(hostname),std::end(hostname),[=](const char in){
-         return isdigit(in);
-      });
-  
-   std::string cluster(std::begin(hostname), firstdigit);
+   std::string cluster(hostname, 0, hostname.find_first_of("0123456789"));
   
    setGlobal("Cluster",           cluster.c_str());  
      
@@ -50,16 +47,30 @@ void RecordCaliperMetadata(const struct cmdLineOpts& opts)
 
 void EnableSpot()
 {
-   std::string services = "event,aggregate,timestamp,recorder";
+   std::map<std::string, std::string> cfg = {
+      { "CALI_SERVICES_ENABLE",          "event,aggregate,timestamp" },
+      { "CALI_TIMER_INCLUSIVE_DURATION", "true" }
+   };
+
+   char   timestr[16];
+   time_t tm = time(NULL);
+   strftime(timestr, sizeof(timestr), "%y%m%d-%H%M%S", localtime(&tm));
+
+   std::string filename =
+       std::string(timestr) + "_lulesh_%Cluster%_" + std::to_string(getpid()) + ".cali";
 
 #if USE_MPI
-   services.append(",mpi");
+   cfg["CALI_SERVICES_ENABLE"      ].append(",mpi,mpireport");
+   cfg["CALI_MPIREPORT_CONFIG"     ] =
+      "select loop,function,mpi.function,min(sum#time.inclusive.duration),avg(sum#time.inclusive.duration),max(sum#time.inclusive.duration) group by prop:nested format cali";
+   cfg["CALI_MPIREPORT_FILENAME"   ] = filename;
+   cfg["CALI_CHANNEL_FLUSH_ON_EXIT"] = "false"; // mpireport flushes at MPI_Finalize
+#else
+   cfg["CALI_SERVICES_ENABLE"      ].append(",recorder");
+   cfg["CALI_RECORDER_FILENAME"    ] = filename;
 #endif
    
-   cali::create_channel("spot", 0, {
-         { "CALI_SERVICES_ENABLE",          services },
-         { "CALI_TIMER_INCLUSIVE_DURATION", "true" }
-      });
+   cali::create_channel("spot", 0, cfg);
 }
 
 

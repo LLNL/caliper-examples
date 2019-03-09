@@ -2750,6 +2750,8 @@ int main(int argc, char *argv[])
    MPI_Init(&argc, &argv) ;
    MPI_Comm_size(MPI_COMM_WORLD, &numRanks) ;
    MPI_Comm_rank(MPI_COMM_WORLD, &myRank) ;
+
+   cali_mpi_init();
 #else
    numRanks = 1;
    myRank = 0;
@@ -2786,10 +2788,6 @@ int main(int argc, char *argv[])
       printf("See help (-h) for more options\n\n");
    }
 
-#if USE_MPI
-   cali_mpi_init();
-#endif
-
    cali_config_preset("CALI_LOG_VERBOSITY", "0");
    cali_config_preset("CALI_CALIPER_ATTRIBUTE_PROPERTIES",
                       "function=nested:process_scope"
@@ -2803,7 +2801,7 @@ int main(int argc, char *argv[])
    
    RecordCaliperMetadata(opts);
    
-   CALI_CXX_MARK_FUNCTION;
+   CALI_MARK_FUNCTION_BEGIN;
 
    // Set up the mesh and decompose. Assumes regular cubes for now
    Int_t col, row, plane, side;
@@ -2882,6 +2880,8 @@ int main(int argc, char *argv[])
    if ((myRank == 0) && (opts.quiet == 0)) {
       VerifyAndWriteFinalOutput(elapsed_timeG, *locDom, opts.nx, numRanks);
    }
+
+   CALI_MARK_FUNCTION_END;
 
 #if USE_MPI
    MPI_Finalize() ;
