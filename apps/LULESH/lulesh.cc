@@ -2740,9 +2740,12 @@ void LagrangeLeapFrog(Domain& domain)
 int main(int argc, char *argv[])
 {
    Domain *locDom ;
-   Int_t numRanks ;
-   Int_t myRank ;
+   Int_t numRanks = 1;
+   Int_t myRank = 0;
    struct cmdLineOpts opts;
+   
+   cali_config_preset("CALI_LOG_VERBOSITY", "0");
+   cali_config_preset("CALI_CALIPER_ATTRIBUTE_DEFAULT_SCOPE", "process");
 
 #if USE_MPI   
    Domain_member fieldData ;
@@ -2755,8 +2758,7 @@ int main(int argc, char *argv[])
 #else
    numRanks = 1;
    myRank = 0;
-#endif   
-
+#endif
 
    /* Set defaults that can be overridden by command line opts */
    opts.its = 9999999;
@@ -2787,17 +2789,21 @@ int main(int argc, char *argv[])
       printf("To write an output file for VisIt, use -v\n");
       printf("See help (-h) for more options\n\n");
    }
-
-   cali_config_preset("CALI_LOG_VERBOSITY", "0");
-   cali_config_preset("CALI_CALIPER_ATTRIBUTE_PROPERTIES",
-                      "function=nested:process_scope"
-                      ",loop=nested:process_scope"
-                      ",mpi.function=nested:process_scope" 
-                      ",iteration#lulesh.cycle=process_scope:asvalue");
-
+   
    if (opts.spot) {
        EnableSpot();
-   }  
+   }
+   
+   if (opts.profile) {
+       if (numRanks > 1)
+           cali::create_channel("mpi-runtime-report", 0, {
+                   { "CALI_CONFIG_PROFILE", "mpi-runtime-report" }
+               });
+       else
+           cali::create_channel("runtime-report", 0, {
+                   { "CALI_CONFIG_PROFILE", "runtime-report" }
+               });           
+   }
    
    RecordCaliperMetadata(opts);
    
@@ -2837,9 +2843,7 @@ int main(int argc, char *argv[])
    timeval start;
    gettimeofday(&start, NULL) ;
 #endif
-//debug to see region sizes
-//   for(Int_t i = 0; i < locDom->numReg(); i++)
-//      std::cout << "region" << i + 1<< "size" << locDom->regElemSize(i) <<std::endl;
+
    while((locDom->time() < locDom->stoptime()) && (locDom->cycle() < opts.its)) {
       CALI_CXX_MARK_LOOP_ITERATION(mainloop, static_cast<int>(locDom->cycle()));
 
