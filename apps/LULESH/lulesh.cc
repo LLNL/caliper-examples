@@ -162,6 +162,10 @@ Additional BSD Notice
 
 #include "lulesh.h"
 
+#include "MpiProfile.hpp"
+#include "RuntimeProfiler.hpp"
+#include "SpotController.hpp"
+
 /*********************************/
 /* Data structure implementation */
 /*********************************/
@@ -2744,6 +2748,9 @@ int main(int argc, char *argv[])
    Int_t myRank ;
    struct cmdLineOpts opts;
 
+   cali_config_preset("CALI_LOG_VERBOSITY", "0");
+   cali_config_preset("CALI_CALIPER_ATTRIBUTE_DEFAULT_SCOPE", "process");
+
 #if USE_MPI   
    Domain_member fieldData ;
 
@@ -2788,17 +2795,20 @@ int main(int argc, char *argv[])
       printf("See help (-h) for more options\n\n");
    }
 
-   cali_config_preset("CALI_LOG_VERBOSITY", "0");
-   cali_config_preset("CALI_CALIPER_ATTRIBUTE_PROPERTIES",
-                      "function=nested:process_scope"
-                      ",loop=nested:process_scope"
-                      ",mpi.function=nested:process_scope" 
-                      ",iteration#lulesh.cycle=process_scope:asvalue");
+   RuntimeProfiler prof(numRanks > 1  /* use MPI? */);
+   SpotController  spot(numRanks > 1  /* use MPI? */);
+   MpiProfile mpip("stderr");
 
+   if (opts.profile) {
+       prof.start();
+   }
    if (opts.spot) {
-       EnableSpot();
-   }  
-   
+       spot.start();
+   }
+   if (opts.periodicMpiProfile) {
+       mpip.start();
+   }
+
    RecordCaliperMetadata(opts);
    
    CALI_MARK_FUNCTION_BEGIN;
@@ -2843,6 +2853,10 @@ int main(int argc, char *argv[])
    while((locDom->time() < locDom->stoptime()) && (locDom->cycle() < opts.its)) {
       CALI_CXX_MARK_LOOP_ITERATION(mainloop, static_cast<int>(locDom->cycle()));
 
+      if (opts.periodicMpiProfile != 0 && (locDom->cycle() % 10 == 0)) {
+          mpip.flush();
+      }
+
       TimeIncrement(*locDom) ;
       LagrangeLeapFrog(*locDom) ;
 
@@ -2882,6 +2896,12 @@ int main(int argc, char *argv[])
    }
 
    CALI_MARK_FUNCTION_END;
+
+   // Flush caliper channels before MPI finalization
+   if (opts.spot)
+       spot.flush();
+   if (opts.profile)
+       prof.flush();
 
 #if USE_MPI
    MPI_Finalize() ;

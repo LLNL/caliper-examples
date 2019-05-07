@@ -53,6 +53,9 @@ execute_process(COMMAND whoami OUTPUT_VARIABLE LULESH_BUILT_BY OUTPUT_STRIP_TRAI
 configure_file(lulesh-build-metadata.cc.in ${CMAKE_BINARY_DIR}/lulesh-build-metadata.cc)
 
 set(LULESH_SOURCES
+  MpiProfile.cpp
+  RuntimeProfiler.cpp
+  SpotController.cpp
   lulesh-comm.cc
   lulesh-init.cc
   lulesh-util.cc

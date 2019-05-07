@@ -45,34 +45,6 @@ void RecordCaliperMetadata(const struct cmdLineOpts& opts)
    // setGlobal("Run Start Time",asctime(rt));
 }
 
-void EnableSpot()
-{
-   std::map<std::string, std::string> cfg = {
-      { "CALI_SERVICES_ENABLE",          "event,aggregate,timestamp" },
-      { "CALI_TIMER_INCLUSIVE_DURATION", "true" }
-   };
-
-   char   timestr[16];
-   time_t tm = time(NULL);
-   strftime(timestr, sizeof(timestr), "%y%m%d-%H%M%S", localtime(&tm));
-
-   std::string filename =
-       std::string(timestr) + "_lulesh_%Cluster%_" + std::to_string(getpid()) + ".cali";
-
-#if USE_MPI
-   cfg["CALI_SERVICES_ENABLE"      ].append(",mpi,mpireport");
-   cfg["CALI_MPIREPORT_CONFIG"     ] =
-      "select loop,function,mpi.function,min(sum#time.inclusive.duration),avg(sum#time.inclusive.duration),max(sum#time.inclusive.duration) group by prop:nested format cali";
-   cfg["CALI_MPIREPORT_FILENAME"   ] = filename;
-   cfg["CALI_CHANNEL_FLUSH_ON_EXIT"] = "false"; // mpireport flushes at MPI_Finalize
-#else
-   cfg["CALI_SERVICES_ENABLE"      ].append(",recorder");
-   cfg["CALI_RECORDER_FILENAME"    ] = filename;
-#endif
-   
-   cali::create_channel("spot", 0, cfg);
-}
-
 
 /* Helper function for converting strings to ints, with error checking */
 int StrToInt(const char *token, int *retVal)
@@ -107,6 +79,8 @@ static void PrintCommandLineOptions(char *execname, int myRank)
       printf(" -f <numfiles>   : Number of files to split viz dump into (def: (np+10)/9)\n");
       printf(" -p              : Print out progress\n");
       printf(" -g              : Produce Spot Caliper file\n");
+      printf(" -P              : Print a detailed runtime performance profile\n");
+      printf(" -M              : Print periodic MPI performance profile\n");
       printf(" -v              : Output viz file (requires compiling with -DVIZ_MESH\n");
       printf(" -h              : This message\n");
       printf("\n\n");
@@ -189,6 +163,14 @@ void ParseCommandLineOptions(int argc, char *argv[],
          }
          else if (strcmp(argv[i], "-g") == 0) {
             opts->spot = 1;
+            i++;
+         }
+         else if (strcmp(argv[i], "-P") == 0) {
+            opts->profile = 1;
+            i++;
+         }
+         else if (strcmp(argv[i], "-M") == 0) {
+            opts->periodicMpiProfile = 1;
             i++;
          }
          else if (strcmp(argv[i], "-b") == 0) {

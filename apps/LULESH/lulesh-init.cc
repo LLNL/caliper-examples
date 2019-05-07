@@ -63,6 +63,7 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    m_numNode = edgeNodes*edgeNodes*edgeNodes ;
 
    m_regNumList = new Index_t[numElem()] ;  // material indexset
+   cali_datatracker_track(m_regNumList, "m_regNumList", sizeof(Index_t)*numElem());
 
    // Elem-centered 
    AllocateElemPersistent(numElem()) ;
@@ -356,7 +357,10 @@ Domain::SetupCommBuffers(Int_t edgeNodes)
 		 (m_rowMax & m_colMax & m_planeMax)) * CACHE_COHERENCE_PAD_REAL ;
 
   this->commDataSend = new Real_t[comBufSize] ;
+  cali_datatracker_track(this->commDataSend, "commDataSend", comBufSize*sizeof(Real_t));
   this->commDataRecv = new Real_t[comBufSize] ;
+  cali_datatracker_track(this->commDataRecv, "commDataRecv", comBufSize*sizeof(Real_t));
+      
   // prevent floating point exceptions 
   memset(this->commDataSend, 0, comBufSize*sizeof(Real_t)) ;
   memset(this->commDataRecv, 0, comBufSize*sizeof(Real_t)) ;
