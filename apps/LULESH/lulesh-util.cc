@@ -94,6 +94,7 @@ static void PrintCommandLineOptions(char *execname, int myRank)
       printf(" -g              : Produce Spot Caliper file\n");
       printf(" -v              : Output viz file (requires compiling with -DVIZ_MESH\n");
       printf(" -h              : This message\n");
+      printf(" -P <config>     : Caliper configuration\n");
       printf("\n\n");
    }
 }
@@ -176,10 +177,6 @@ void ParseCommandLineOptions(int argc, char *argv[],
             opts->spot = 1;
             i++;
          }
-         else if (strcmp(argv[i], "-P") == 0) {
-            opts->profile = 1;
-            i++;
-         }
          else if (strcmp(argv[i], "-b") == 0) {
             if (i+1 >= argc) {
                ParseError("Missing integer argument to -b\n", myRank);
@@ -199,6 +196,13 @@ void ParseCommandLineOptions(int argc, char *argv[],
                ParseError("Parse Error on option -c integer value required after argument\n", myRank);
             }
             i+=2;
+         }
+         else if (strcmp(argv[i], "-P") == 0) {
+             if (i+1 >= argc) {
+                 ParseError("Missing config string argument to -P\n", myRank);
+             }
+             opts->calicfg = argv[i+1];
+             i += 2;
          }
          /* -v */
          else if (strcmp(argv[i], "-v") == 0) {

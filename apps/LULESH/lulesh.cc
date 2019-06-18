@@ -15,9 +15,9 @@ DIFFERENCES BETWEEN THIS VERSION (2.x) AND EARLIER VERSIONS:
 * Addition of regions to make work more representative of multi-material codes
 * Default size of each domain is 30^3 (27000 elem) instead of 45^3. This is
   more representative of our actual working set sizes
-* Single source distribution supports pure serial, pure OpenMP, MPI-only, 
+* Single source distribution supports pure serial, pure OpenMP, MPI-only,
   and MPI+OpenMP
-* Addition of ability to visualize the mesh using VisIt 
+* Addition of ability to visualize the mesh using VisIt
   https://wci.llnl.gov/codes/visit/download.html
 * Various command line options (see ./lulesh2.0 -h)
  -q              : quiet mode - suppress stdout
@@ -61,7 +61,7 @@ lulesh-util.cc - Non-timed functions
 *   Four of the LULESH routines are now performed on a region-by-region basis,
 *     making the memory access patterns non-unit stride
 *   Artificial load imbalances can be easily introduced that could impact
-*     parallelization strategies.  
+*     parallelization strategies.
 * The load balance flag changes region assignment.  Region number is raised to
 *   the power entered for assignment probability.  Most likely regions changes
 *   with MPI process id.
@@ -160,6 +160,8 @@ Additional BSD Notice
 # include <omp.h>
 #endif
 
+#include <caliper/cali-manager.h>
+
 #include "lulesh.h"
 
 /*********************************/
@@ -211,14 +213,14 @@ void TimeIncrement(Domain& domain)
          gnewdt = domain.dthydro() * Real_t(2.0) / Real_t(3.0) ;
       }
 
-#if USE_MPI      
+#if USE_MPI
       MPI_Allreduce(&gnewdt, &newdt, 1,
                     ((sizeof(Real_t) == 4) ? MPI_FLOAT : MPI_DOUBLE),
                     MPI_MIN, MPI_COMM_WORLD) ;
 #else
       newdt = gnewdt;
 #endif
-      
+
       ratio = newdt / olddt ;
       if (ratio >= Real_t(1.0)) {
          if (ratio < domain.deltatimemultlb()) {
@@ -759,12 +761,12 @@ void CalcFBHourglassForceForElems( Domain &domain,
     *               force.
     *
     *************************************************/
-  
+
    Index_t numElem8 = numElem * 8 ;
 
-   Real_t *fx_elem; 
-   Real_t *fy_elem; 
-   Real_t *fz_elem; 
+   Real_t *fx_elem;
+   Real_t *fy_elem;
+   Real_t *fz_elem;
 
    if(numthreads > 1) {
       fx_elem = Allocate<Real_t>(numElem8) ;
@@ -1066,7 +1068,7 @@ void CalcHourglassControlForElems(Domain& domain,
 
       /* Do a check for negative volumes */
       if ( domain.v(i) <= Real_t(0.0) ) {
-#if USE_MPI         
+#if USE_MPI
          MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
 #else
          exit(VolumeError);
@@ -1118,7 +1120,7 @@ void CalcVolumeForceForElems(Domain& domain)
 #pragma omp parallel for firstprivate(numElem)
       for ( Index_t k=0 ; k<numElem ; ++k ) {
          if (determ[k] <= Real_t(0.0)) {
-#if USE_MPI            
+#if USE_MPI
             MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
 #else
             exit(VolumeError);
@@ -1143,11 +1145,11 @@ static inline void CalcForceForNodes(Domain& domain)
 
   Index_t numNode = domain.numNode() ;
 
-#if USE_MPI  
+#if USE_MPI
   CommRecv(domain, MSG_COMM_SBN, 3,
            domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
            true, false) ;
-#endif  
+#endif
 
 #pragma omp parallel for firstprivate(numNode)
   for (Index_t i=0; i<numNode; ++i) {
@@ -1159,17 +1161,17 @@ static inline void CalcForceForNodes(Domain& domain)
   /* Calcforce calls partial, force, hourq */
   CalcVolumeForceForElems(domain) ;
 
-#if USE_MPI  
+#if USE_MPI
   Domain_member fieldData[3] ;
   fieldData[0] = &Domain::fx ;
   fieldData[1] = &Domain::fy ;
   fieldData[2] = &Domain::fz ;
-  
+
   CommSend(domain, MSG_COMM_SBN, 3, fieldData,
            domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() +  1,
            true, false) ;
   CommSBN(domain, 3, fieldData) ;
-#endif  
+#endif
 }
 
 /******************************************/
@@ -1177,7 +1179,7 @@ static inline void CalcForceForNodes(Domain& domain)
 static inline
 void CalcAccelerationForNodes(Domain &domain, Index_t numNode)
 {
-   
+
 #pragma omp parallel for firstprivate(numNode)
    for (Index_t i = 0; i < numNode; ++i) {
       domain.xdd(i) = domain.fx(i) / domain.nodalMass(i);
@@ -1274,16 +1276,16 @@ void LagrangeNodal(Domain& domain)
    * acceleration boundary conditions. */
   CalcForceForNodes(domain);
 
-#if USE_MPI  
+#if USE_MPI
 #ifdef SEDOV_SYNC_POS_VEL_EARLY
    CommRecv(domain, MSG_SYNC_POS_VEL, 6,
             domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
             false, false) ;
 #endif
 #endif
-   
+
    CalcAccelerationForNodes(domain, domain.numNode());
-   
+
    ApplyAccelerationBoundaryConditionsForNodes(domain);
 
    CalcVelocityForNodes( domain, delt, u_cut, domain.numNode()) ;
@@ -1304,7 +1306,7 @@ void LagrangeNodal(Domain& domain)
    CommSyncPosVel(domain) ;
 #endif
 #endif
-   
+
   return;
 }
 
@@ -1542,7 +1544,7 @@ void CalcElemVelocityGradient( const Real_t* const xvel,
 /******************************************/
 
 //static inline
-void CalcKinematicsForElems( Domain &domain, Real_t *vnew, 
+void CalcKinematicsForElems( Domain &domain, Real_t *vnew,
                              Real_t deltaTime, Index_t numElem )
 {
    CALI_CXX_MARK_FUNCTION;
@@ -1640,7 +1642,7 @@ void CalcLagrangeElements(Domain& domain, Real_t* vnew)
         // See if any volumes are negative, and take appropriate action.
          if (vnew[k] <= Real_t(0.0))
         {
-#if USE_MPI           
+#if USE_MPI
            MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
 #else
            exit(VolumeError);
@@ -1971,10 +1973,10 @@ void CalcMonotonicQRegionForElems(Domain &domain, Int_t r,
 
 static inline
 void CalcMonotonicQForElems(Domain& domain, Real_t vnew[])
-{  
+{
    //
    // initialize parameters
-   // 
+   //
    const Real_t ptiny = Real_t(1.e-36) ;
 
    cali::Annotation r_ann("lulesh.region", CALI_ATTR_SCOPE_PROCESS);
@@ -2013,18 +2015,18 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
 
       domain.AllocateGradients(numElem, allElem);
 
-#if USE_MPI      
+#if USE_MPI
       CommRecv(domain, MSG_MONOQ, 3,
                domain.sizeX(), domain.sizeY(), domain.sizeZ(),
                true, true) ;
-#endif      
+#endif
 
       /* Calculate velocity gradients */
       CalcMonotonicQGradientsForElems(domain, vnew);
 
-#if USE_MPI      
+#if USE_MPI
       Domain_member fieldData[3] ;
-      
+
       /* Transfer veloctiy gradients in the first order elements */
       /* problem->commElements->Transfer(CommElements::monoQ) ; */
 
@@ -2037,7 +2039,7 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
                true, true) ;
 
       CommMonoQ(domain) ;
-#endif      
+#endif
 
       CalcMonotonicQForElems(domain, vnew) ;
 
@@ -2045,7 +2047,7 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
       domain.DeallocateGradients();
 
       /* Don't allow excessive artificial viscosity */
-      Index_t idx = -1; 
+      Index_t idx = -1;
       for (Index_t i=0; i<numElem; ++i) {
          if ( domain.q(i) > domain.qstop() ) {
             idx = i ;
@@ -2054,7 +2056,7 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
       }
 
       if(idx >= 0) {
-#if USE_MPI         
+#if USE_MPI
          MPI_Abort(MPI_COMM_WORLD, QStopError) ;
 #else
          exit(QStopError);
@@ -2085,7 +2087,7 @@ void CalcPressureForElems(Real_t* p_new, Real_t* bvc,
 #pragma omp parallel for firstprivate(length, pmin, p_cut, eosvmax)
    for (Index_t i = 0 ; i < length ; ++i){
       Index_t elem = regElemList[i];
-      
+
       p_new[i] = bvc[i] * e_old[i] ;
 
       if    (FABS(p_new[i]) <  p_cut   )
@@ -2278,7 +2280,7 @@ void EvalEOSForElems(Domain& domain, Real_t *vnewc,
    Real_t emin    = domain.emin() ;
    Real_t rho0    = domain.refdens() ;
 
-   // These temporaries will be of different size for 
+   // These temporaries will be of different size for
    // each call (due to different sized region element
    // lists)
    Real_t *e_old = Allocate<Real_t>(numElemReg) ;
@@ -2295,8 +2297,8 @@ void EvalEOSForElems(Domain& domain, Real_t *vnewc,
    Real_t *q_new = Allocate<Real_t>(numElemReg) ;
    Real_t *bvc = Allocate<Real_t>(numElemReg) ;
    Real_t *pbvc = Allocate<Real_t>(numElemReg) ;
- 
-   //loop to add load imbalance based on region number 
+
+   //loop to add load imbalance based on region number
    for(Int_t j = 0; j < rep; j++) {
       /* compress data, minimal set */
 #pragma omp parallel
@@ -2345,7 +2347,7 @@ void EvalEOSForElems(Domain& domain, Real_t *vnewc,
 
 #pragma omp for nowait firstprivate(numElemReg)
          for (Index_t i = 0 ; i < numElemReg ; ++i) {
-            work[i] = Real_t(0.) ; 
+            work[i] = Real_t(0.) ;
          }
       }
       CalcEnergyForElems(p_new, e_new, q_new, bvc, pbvc,
@@ -2433,7 +2435,7 @@ void ApplyMaterialPropertiesForElems(Domain& domain, Real_t vnew[])
                 vc = eosvmax ;
           }
           if (vc <= 0.) {
-#if USE_MPI             
+#if USE_MPI
              MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
 #else
              exit(VolumeError);
@@ -2521,7 +2523,7 @@ void CalcCourantConstraintForElems(Domain &domain, Index_t length,
 {
    CALI_CXX_MARK_FUNCTION;
 
-#if _OPENMP   
+#if _OPENMP
    Index_t threads = omp_get_max_threads();
    static Index_t *courant_elem_per_thread;
    static Real_t *dtcourant_per_thread;
@@ -2548,9 +2550,9 @@ void CalcCourantConstraintForElems(Domain &domain, Index_t length,
       Index_t thread_num = omp_get_thread_num();
 #else
       Index_t thread_num = 0;
-#endif      
+#endif
 
-#pragma omp for 
+#pragma omp for
       for (Index_t i = 0 ; i < length ; ++i) {
          Index_t indx = regElemlist[i] ;
          Real_t dtf = domain.ss(indx) * domain.ss(indx) ;
@@ -2599,7 +2601,7 @@ void CalcHydroConstraintForElems(Domain &domain, Index_t length,
 {
    CALI_CXX_MARK_FUNCTION;
 
-#if _OPENMP   
+#if _OPENMP
    Index_t threads = omp_get_max_threads();
    static Index_t *hydro_elem_per_thread;
    static Real_t *dthydro_per_thread;
@@ -2620,11 +2622,11 @@ void CalcHydroConstraintForElems(Domain &domain, Index_t length,
       Real_t dthydro_tmp = dthydro ;
       Index_t hydro_elem = -1 ;
 
-#if _OPENMP      
+#if _OPENMP
       Index_t thread_num = omp_get_thread_num();
-#else      
+#else
       Index_t thread_num = 0;
-#endif      
+#endif
 
 #pragma omp for
       for (Index_t i = 0 ; i < length ; ++i) {
@@ -2706,7 +2708,7 @@ void LagrangeLeapFrog(Domain& domain)
     * material states */
    LagrangeElements(domain, domain.numElem());
 
-#if USE_MPI   
+#if USE_MPI
 #ifdef SEDOV_SYNC_POS_VEL_LATE
    CommRecv(domain, MSG_SYNC_POS_VEL, 6,
             domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
@@ -2718,20 +2720,20 @@ void LagrangeLeapFrog(Domain& domain)
    fieldData[3] = &Domain::xd ;
    fieldData[4] = &Domain::yd ;
    fieldData[5] = &Domain::zd ;
-   
+
    CommSend(domain, MSG_SYNC_POS_VEL, 6, fieldData,
             domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
             false, false) ;
 #endif
-#endif   
+#endif
 
    CalcTimeConstraintsForElems(domain);
 
-#if USE_MPI   
+#if USE_MPI
 #ifdef SEDOV_SYNC_POS_VEL_LATE
    CommSyncPosVel(domain) ;
 #endif
-#endif   
+#endif
 }
 
 
@@ -2743,11 +2745,11 @@ int main(int argc, char *argv[])
    Int_t numRanks = 1;
    Int_t myRank = 0;
    struct cmdLineOpts opts;
-   
+
    cali_config_preset("CALI_LOG_VERBOSITY", "0");
    cali_config_preset("CALI_CALIPER_ATTRIBUTE_DEFAULT_SCOPE", "process");
 
-#if USE_MPI   
+#if USE_MPI
    Domain_member fieldData ;
 
    MPI_Init(&argc, &argv) ;
@@ -2771,6 +2773,7 @@ int main(int argc, char *argv[])
    opts.balance = 1;
    opts.cost = 1;
    opts.spot = 0;
+   opts.calicfg = "";
 
    ParseCommandLineOptions(argc, argv, myRank, &opts);
 
@@ -2789,24 +2792,31 @@ int main(int argc, char *argv[])
       printf("To write an output file for VisIt, use -v\n");
       printf("See help (-h) for more options\n\n");
    }
-   
+
    if (opts.spot) {
        EnableSpot();
    }
-   
-   if (opts.profile) {
-       if (numRanks > 1)
-           cali::create_channel("mpi-runtime-report", 0, {
-                   { "CALI_CONFIG_PROFILE", "mpi-runtime-report" }
-               });
-       else
-           cali::create_channel("runtime-report", 0, {
-                   { "CALI_CONFIG_PROFILE", "runtime-report" }
-               });           
+
+   // Enable Caliper configurations given in -P
+
+   cali::ConfigManager mgr;
+
+   mgr.use_mpi(numRanks > 1);
+
+   if (!opts.calicfg.empty()) {
+      mgr.add(opts.calicfg.c_str());
+
+      if (mgr.error())
+         std::cerr << "Caliper config: parse error: " << mgr.error_msg() << std::endl;
    }
-   
+
+   auto caliper_channels = mgr.get_all_channels();
+
+   for (auto &c : caliper_channels)
+      c->start();
+
    RecordCaliperMetadata(opts);
-   
+
    CALI_MARK_FUNCTION_BEGIN;
 
    // Set up the mesh and decompose. Assumes regular cubes for now
@@ -2818,10 +2828,10 @@ int main(int argc, char *argv[])
                        side, opts.numReg, opts.balance, opts.cost) ;
 
 
-#if USE_MPI   
+#if USE_MPI
    fieldData = &Domain::nodalMass ;
 
-   // Initial domain boundary communication 
+   // Initial domain boundary communication
    CommRecv(*locDom, MSG_COMM_SBN, 1,
             locDom->sizeX() + 1, locDom->sizeY() + 1, locDom->sizeZ() + 1,
             true, false) ;
@@ -2832,12 +2842,12 @@ int main(int argc, char *argv[])
 
    // End initialization
    MPI_Barrier(MPI_COMM_WORLD);
-#endif   
+#endif
 
    CALI_CXX_MARK_LOOP_BEGIN(mainloop, "lulesh.cycle");
-   
+
    // BEGIN timestep to solution */
-#if USE_MPI   
+#if USE_MPI
    double start = MPI_Wtime();
 #else
    timeval start;
@@ -2858,7 +2868,7 @@ int main(int argc, char *argv[])
 
    // Use reduced max elapsed time
    double elapsed_time;
-#if USE_MPI   
+#if USE_MPI
    elapsed_time = MPI_Wtime() - start;
 #else
    timeval end;
@@ -2869,7 +2879,7 @@ int main(int argc, char *argv[])
    CALI_CXX_MARK_LOOP_END(mainloop);
 
    double elapsed_timeG;
-#if USE_MPI   
+#if USE_MPI
    MPI_Reduce(&elapsed_time, &elapsed_timeG, 1, MPI_DOUBLE,
               MPI_MAX, 0, MPI_COMM_WORLD);
 #else
@@ -2880,12 +2890,16 @@ int main(int argc, char *argv[])
    if (opts.viz) {
       DumpToVisit(*locDom, opts.numFiles, myRank, numRanks) ;
    }
-   
+
    if ((myRank == 0) && (opts.quiet == 0)) {
       VerifyAndWriteFinalOutput(elapsed_timeG, *locDom, opts.nx, numRanks);
    }
 
    CALI_MARK_FUNCTION_END;
+
+   // Flush Caliper channels
+   for (auto &c : caliper_channels)
+      c->flush();
 
 #if USE_MPI
    MPI_Finalize() ;
