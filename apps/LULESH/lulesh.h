@@ -25,6 +25,7 @@
 #endif
 
 #include <math.h>
+#include <string>
 #include <vector>
 
 //**************************************************
@@ -660,6 +661,7 @@ struct cmdLineOpts {
    Int_t viz; // -v 
    Int_t cost; // -c
    Int_t balance; // -b
+   std::string calicfg; // -P
 };
 
 
@@ -673,7 +675,6 @@ Real_t CalcElemVolume( const Real_t x[8],
 
 // lulesh-util
 void RecordCaliperMetadata(const struct cmdLineOpts& opts);
-void EnableSpot();
 
 void ParseCommandLineOptions(int argc, char *argv[],
                              Int_t myRank, struct cmdLineOpts *opts);
