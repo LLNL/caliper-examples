@@ -28,6 +28,7 @@ DIFFERENCES BETWEEN THIS VERSION (2.x) AND EARLIER VERSIONS:
  -c <cost>       : Extra cost of more expensive regions (def: 1)
  -f <filepieces> : Number of file parts for viz output (def: np/9)
  -p              : Print out progress
+ -P <config>     : Caliper configuration
  -v              : Output viz file (requires compiling with -DVIZ_MESH
  -h              : This message
 
@@ -2800,8 +2801,6 @@ int main(int argc, char *argv[])
    // Enable Caliper configurations given in -P
 
    cali::ConfigManager mgr;
-
-   mgr.use_mpi(numRanks > 1);
 
    if (!opts.calicfg.empty()) {
       mgr.add(opts.calicfg.c_str());
