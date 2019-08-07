@@ -165,6 +165,10 @@ Additional BSD Notice
 
 #include "lulesh.h"
 
+#include "MpiProfile.hpp"
+#include "RuntimeProfiler.hpp"
+#include "SpotController.hpp"
+
 /*********************************/
 /* Data structure implementation */
 /*********************************/
@@ -2799,7 +2803,6 @@ int main(int argc, char *argv[])
    }
 
    // Enable Caliper configurations given in -P
-
    cali::ConfigManager mgr;
 
    if (!opts.calicfg.empty()) {
@@ -2855,6 +2858,10 @@ int main(int argc, char *argv[])
 
    while((locDom->time() < locDom->stoptime()) && (locDom->cycle() < opts.its)) {
       CALI_CXX_MARK_LOOP_ITERATION(mainloop, static_cast<int>(locDom->cycle()));
+
+      if (opts.periodicMpiProfile != 0 && (locDom->cycle() % 10 == 0)) {
+          mpip.flush();
+      }
 
       TimeIncrement(*locDom) ;
       LagrangeLeapFrog(*locDom) ;
