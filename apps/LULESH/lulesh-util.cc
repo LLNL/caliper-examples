@@ -64,7 +64,6 @@ static void PrintCommandLineOptions(char *execname, int myRank)
       printf(" -f <numfiles>   : Number of files to split viz dump into (def: (np+10)/9)\n");
       printf(" -p              : Print out progress\n");
       printf(" -g              : Produce Spot Caliper file\n");
-      printf(" -P              : Print a detailed runtime performance profile\n");
       printf(" -M              : Print periodic MPI performance profile\n");
       printf(" -v              : Output viz file (requires compiling with -DVIZ_MESH\n");
       printf(" -h              : This message\n");
@@ -149,10 +148,6 @@ void ParseCommandLineOptions(int argc, char *argv[],
          }
          else if (strcmp(argv[i], "-g") == 0) {
             opts->spot = 1;
-            i++;
-         }
-         else if (strcmp(argv[i], "-P") == 0) {
-            opts->profile = 1;
             i++;
          }
          else if (strcmp(argv[i], "-M") == 0) {

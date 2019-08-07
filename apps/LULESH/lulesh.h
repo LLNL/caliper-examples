@@ -675,7 +675,6 @@ Real_t CalcElemVolume( const Real_t x[8],
 
 // lulesh-util
 void RecordCaliperMetadata(const struct cmdLineOpts& opts);
-void EnableSpot();
 
 void ParseCommandLineOptions(int argc, char *argv[],
                              Int_t myRank, struct cmdLineOpts *opts);
