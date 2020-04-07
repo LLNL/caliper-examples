@@ -1,14 +1,19 @@
 cmake_minimum_required(VERSION 3.0)
+
 project(LULESH CXX)
 
 option(WITH_MPI    "Build LULESH with MPI"          TRUE)
 option(WITH_OPENMP "Build LULESH with OpenMP"       TRUE)
 option(WITH_SILO   "Build LULESH with silo support" FALSE)
 
-find_package(caliper)
-find_package(Threads)
-include_directories(${caliper_INCLUDE_DIR})
-list(APPEND LULESH_EXTERNAL_LIBS caliper Threads::Threads)
+find_package(caliper REQUIRED)
+find_package(adiak REQUIRED)
+
+include_directories(${caliper_INCLUDE_DIR} ${adiak_INCLUDE_DIRS})
+
+list(APPEND LULESH_EXTERNAL_LIBS caliper adiak)
+
+set(CMAKE_CXX_STANDARD 11)
 
 if (WITH_MPI)
   find_package(MPI REQUIRED)
@@ -18,7 +23,7 @@ if (WITH_MPI)
 else()
   add_definitions("-DUSE_MPI=0")
 endif()
-include_directories(${CMAKE_SOURCE_DIR})
+
 if (WITH_OPENMP)
   find_package(OpenMP REQUIRED)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
@@ -46,18 +51,11 @@ if (WITH_SILO)
   endif()
 endif()
 
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_STANDARD 11)
-
-execute_process(COMMAND whoami OUTPUT_VARIABLE LULESH_BUILT_BY OUTPUT_STRIP_TRAILING_WHITESPACE)
-configure_file(lulesh-build-metadata.cc.in ${CMAKE_BINARY_DIR}/lulesh-build-metadata.cc)
-
 set(LULESH_SOURCES
   lulesh-comm.cc
   lulesh-init.cc
   lulesh-util.cc
   lulesh-viz.cc
-  ${CMAKE_BINARY_DIR}/lulesh-build-metadata.cc
   lulesh.cc)
 
 set(LULESH_EXEC lulesh2.0)

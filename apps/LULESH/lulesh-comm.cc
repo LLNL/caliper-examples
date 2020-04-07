@@ -3,6 +3,8 @@
 // If no MPI, then this whole file is stubbed out
 #if USE_MPI
 
+#include <caliper/cali.h>
+
 #include <mpi.h>
 #include <string.h>
 
@@ -56,11 +58,13 @@
 
 
 /* doRecv flag only works with regular block structure */
-void CommRecv(Domain& domain, int msgType, Index_t xferFields,
+void CommRecv(Domain& domain, Int_t msgType, Index_t xferFields,
               Index_t dx, Index_t dy, Index_t dz, bool doRecv, bool planeOnly) {
 
    if (domain.numRanks() == 1)
       return ;
+   
+   CALI_CXX_MARK_FUNCTION;
 
    /* post recieve buffers for all incoming messages */
    int myRank ;
@@ -354,13 +358,15 @@ void CommRecv(Domain& domain, int msgType, Index_t xferFields,
 
 /******************************************/
 
-void CommSend(Domain& domain, int msgType,
+void CommSend(Domain& domain, Int_t msgType,
               Index_t xferFields, Domain_member *fieldData,
               Index_t dx, Index_t dy, Index_t dz, bool doSend, bool planeOnly)
 {
 
    if (domain.numRanks() == 1)
       return ;
+
+   CALI_CXX_MARK_FUNCTION;
 
    /* post recieve buffers for all incoming messages */
    int myRank ;
@@ -845,10 +851,12 @@ void CommSend(Domain& domain, int msgType,
 
 /******************************************/
 
-void CommSBN(Domain& domain, int xferFields, Domain_member *fieldData) {
+void CommSBN(Domain& domain, Int_t xferFields, Domain_member *fieldData) {
 
    if (domain.numRanks() == 1)
       return ;
+
+   CALI_CXX_MARK_FUNCTION;
 
    /* summation order should be from smallest value to largest */
    /* or we could try out kahan summation! */
@@ -1262,6 +1270,8 @@ void CommSyncPosVel(Domain& domain) {
 
    if (domain.numRanks() == 1)
       return ;
+
+   CALI_CXX_MARK_FUNCTION;
 
    int myRank ;
    bool doRecv = false ;
@@ -1685,6 +1695,8 @@ void CommMonoQ(Domain& domain)
 {
    if (domain.numRanks() == 1)
       return ;
+   
+   CALI_CXX_MARK_FUNCTION;
 
    int myRank ;
    Index_t xferFields = 3 ; /* delv_xi, delv_eta, delv_zeta */
