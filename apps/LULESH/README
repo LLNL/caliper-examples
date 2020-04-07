@@ -12,10 +12,11 @@ Also please send any notable results to Ian Karlin <karlin1@llnl.gov> as we are 
 
 *** Caliper ***
 
-This is a modified copy of LULESH that uses Caliper for performance analysis. 
-Caliper is required to build it.
+This is a modified copy of LULESH that uses Caliper for performance analysis and Adiak for metadata collection. 
+Caliper and Adiak are required to build it.
 
 See https://github.com/LLNL/Caliper
+and https://github.com/LLNL/Adiak
 
 *** Notable changes in LULESH 2.0 ***
 

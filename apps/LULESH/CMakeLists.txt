@@ -1,14 +1,19 @@
 cmake_minimum_required(VERSION 3.0)
+
 project(LULESH CXX)
 
 option(WITH_MPI    "Build LULESH with MPI"          TRUE)
 option(WITH_OPENMP "Build LULESH with OpenMP"       TRUE)
 option(WITH_SILO   "Build LULESH with silo support" FALSE)
 
-find_package(caliper)
-find_package(Threads)
-include_directories(${caliper_INCLUDE_DIR})
-list(APPEND LULESH_EXTERNAL_LIBS caliper Threads::Threads)
+find_package(caliper REQUIRED)
+find_package(adiak REQUIRED)
+
+include_directories(${caliper_INCLUDE_DIR} ${adiak_INCLUDE_DIRS})
+
+list(APPEND LULESH_EXTERNAL_LIBS caliper adiak)
+
+set(CMAKE_CXX_STANDARD 11)
 
 if (WITH_MPI)
   find_package(MPI REQUIRED)
@@ -18,7 +23,7 @@ if (WITH_MPI)
 else()
   add_definitions("-DUSE_MPI=0")
 endif()
-include_directories(${CMAKE_SOURCE_DIR})
+
 if (WITH_OPENMP)
   find_package(OpenMP REQUIRED)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
@@ -39,25 +44,22 @@ if (WITH_SILO)
   if (SILO_FOUND)
     add_definitions("-DVIZ_MESH")
     include_directories(${SILO_INCLUDE_DIR})
-    #   Note: silo needs to be built as a dynamic lib, otherwise 
+    #   Note: silo needs to be built as a dynamic lib, otherwise
     # there are additional dependencies (hdf5) which we don't know.
     # This would be fixed by silo providing a CMake package.
     list(APPEND LULESH_EXTERNAL_LIBS ${SILO_LIBRARY})
   endif()
 endif()
 
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_STANDARD 11)
-
 execute_process(COMMAND whoami OUTPUT_VARIABLE LULESH_BUILT_BY OUTPUT_STRIP_TRAILING_WHITESPACE)
-configure_file(lulesh-build-metadata.cc.in ${CMAKE_BINARY_DIR}/lulesh-build-metadata.cc)
+configure_file(lulesh-build-metadata.cc.in ${CMAKE_CURRENT_BINARY_DIR}/lulesh-build-metadata.cc)
 
 set(LULESH_SOURCES
   lulesh-comm.cc
   lulesh-init.cc
   lulesh-util.cc
   lulesh-viz.cc
-  ${CMAKE_BINARY_DIR}/lulesh-build-metadata.cc
+  ${CMAKE_CURRENT_BINARY_DIR}/lulesh-build-metadata.cc
   lulesh.cc)
 
 set(LULESH_EXEC lulesh2.0)
