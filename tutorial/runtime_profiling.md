@@ -54,7 +54,7 @@ We can also generate a hierarchical profile of the nested annotations, while per
 CALI_SERVICES_ENABLE=aggregate,event,report,timestamp
 CALI_AGGREGATE_KEY=function,loop
 CALI_TIMER_SNAPSHOT_DURATION=true
-CALI_REPORT_CONFIG=“select sum#time.duration format tree”
+CALI_REPORT_CONFIG="select sum#time.duration format tree"
 ```
 
 This will produce the following output from LULESH:
